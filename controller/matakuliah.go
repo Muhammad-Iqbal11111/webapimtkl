@@ -3,17 +3,19 @@ package controller
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/jinzhu/gorm"
+	"github.com/go-playground/validator/v10"
 	"net/http"
 	"webapimtkl/models"
 	"time"
+	"fmt"
 )
 
 type MataKuliahInput struct {
-	Id	int `json:"id" gorm:"primary_key"`
-	KodeMataKuliah string `json:"kodematakuliah"`
-	NamaMataKuliah string `json:"namamatakuliah"`
-	JumlahSKS int `json:"jumlahsks"`
-	DosenPengampu int `json:"dosenpengampu"`
+	Id	int `json:"id" binding: "required,uuid" gorm:"primary_key"`
+	KodeMataKuliah string `json:"kodematakuliah" binding: "required"`
+	NamaMataKuliah string `json:"namamatakuliah" binding: "required,min=3"`
+	JumlahSKS int `json:"jumlahsks" binding: "required"`
+	DosenPengampu int `json:"dosenpengampu" binding: "required"`
 }
 
 //GET Data
@@ -33,7 +35,19 @@ func CreateData(c *gin.Context) {
 	db := c.MustGet("db").(*gorm.DB)
 	//validasi inputan
 	var datamasuk MataKuliahInput
-	if err := c.ShouldBindJSON(&datamasuk); err != nil {
+	err := c.ShouldBindJSON(&datamasuk); 
+	if err != nil {
+		errorMessages := []string {}
+		for _,e := range err.(validator.ValidationErrors){
+			switch  e.Tag() {
+			case "required":
+				report := fmt.Sprintf("%s is required", e.Field())
+				errorMessages = append (errorMessages, report)
+			case "min":
+				report := fmt.Sprintf("%s must be more than 5 characters", e.Field())
+				errorMessages = append (errorMessages, report)
+			}
+		}
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error" : err.Error(),
 		})
@@ -74,7 +88,19 @@ func UpdateData(c *gin.Context) {
 
 	//validasi inputan
 	var datamasuk MataKuliahInput
-	if err := c.ShouldBindJSON(&datamasuk); err != nil {
+	err := c.ShouldBindJSON(&datamasuk) 
+	if err != nil {
+		errorMessages := []string{}
+		for _,e := range err.(validator.ValidationErrors){
+			switch  e.Tag() {
+			case "required":
+				report := fmt.Sprintf("%s is required", e.Field())
+				errorMessages = append (errorMessages, report)
+			case "min":
+				report := fmt.Sprintf("%s must be more than 5 characters", e.Field())
+				errorMessages = append (errorMessages, report)
+			}
+		}
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error" : err.Error(),
 		})

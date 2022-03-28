@@ -10,25 +10,26 @@ import (
 func main() {
 
 	r := gin.Default()
+	v1 := r.Group("/v1")
 	//Models
 	db := models.SetUpModels()
-	r.Use(func(c *gin.Context) {
+	v1.Use(func(c *gin.Context) {
 		c.Set("db", db)
 		c.Next()
 	})
-	r.GET("/", func(c *gin.Context) {
+	v1.GET("/", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
 			"message" : "web api mata kuliah",
 		})
 	})
 		
 	//GET All Data
-	r.GET("/matakuliah", controller.GetData)
+	v1.GET("/matakuliah", controller.GetData)
 	//POST Data >> Create Data
-	r.POST("/matakuliah", controller.CreateData)
+	v1.POST("/matakuliah", controller.CreateData)
 	//Update Data >> Update Data
-	r.PUT("/matakuliah/:kodematakuliah", controller.UpdateData)
+	v1.PUT("/matakuliah/:kodematakuliah", controller.UpdateData)
     //Delete Data >> Delete data
-	r.DELETE("/mahasiswa/:kodematakuliah", controller.DeleteData)
+	v1.DELETE("/mahasiswa/:kodematakuliah", controller.DeleteData)
 	r.Run()
 }
